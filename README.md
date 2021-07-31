@@ -1,5 +1,7 @@
 # AdvancedJoinMOTD
 
+Stable version goes [here](.)
+
 ## English
 
 Custom your own join MOTD! Highly free!
@@ -10,7 +12,7 @@ Because I'm lazy so this plugin is not available in English yet, if you need thi
 
 ## 中文
 
-[更新日志](https://github.com/Lazy-Bing-Server/AdvancedJoinMOTD/changelog.log)
+[更新日志](./changelog.log)
 
 高度可自定义的加入欢迎信息
 
