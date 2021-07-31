@@ -1,7 +1,5 @@
 # AdvancedJoinMOTD
 
-Stable version goes [here](.)
-
 ## English
 
 Custom your own join MOTD! Highly free!
