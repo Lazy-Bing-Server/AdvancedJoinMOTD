@@ -1,34 +1,3 @@
-# 1.x metadata
-plg_name = 'Advanced Join MOTD'
-plg_id = 'advanced_join_motd'
-plg_desc = 'Custom your own join MOTD.'
-verbose_mode = True
-PLUGIN_METADATA = {
-    'id': plg_id,
-    'version': '0.5.2-alpha',
-    'name': plg_id,
-    'description': plg_desc,
-    'author': 'Ra1ny_Yuki',
-    'link': 'https://github.com/Lazy-Bing-Server/AdvancedJoinMOTD',
-    'dependencies':
-    {
-        'mcdreforged': '>=1.5.0' # No longer depends on LBS General API
-    }
-}
-
-from mcdreforged.api.all import *
-from parse import parse
-from typing import Optional
-from urllib.request import urlopen
-from zipfile import ZipFile
-from ruamel import yaml
-
-try:
-    from plugins.daycount import getday
-    daycount_imported = True
-except:
-    daycount_imported = False
-
 import os
 import re
 import time
@@ -38,9 +7,45 @@ import logging
 import datetime
 import collections
 
+from mcdreforged.api.all import *
+from parse import parse
+from typing import Optional, Union, List
+from urllib.request import urlopen
+from zipfile import ZipFile
+from ruamel import yaml
+
+try:
+    from mcdreforged.constants.core_constant import VERSION as MCDR_VERSION
+except ImportError:
+    try:
+        from mcdreforged.constant import VERSION as MCDR_VERSION
+    except ImportError:
+        MCDR_VERSION = 'Invalid version'
+
+
+# 1.x metadata
+plg_name = 'Advanced Join MOTD'
+plg_id = 'advanced_join_motd'
+plg_desc = 'Custom your own join MOTD.'
+verbose_mode = True
+PLUGIN_METADATA = {
+    'id': plg_id,
+    'version': '0.6.0-alpha1',
+    'name': plg_id,
+    'description': plg_desc,
+    'author': 'Ra1ny_Yuki',
+    'link': 'https://github.com/Lazy-Bing-Server/AdvancedJoinMOTD',
+    'dependencies':
+    {
+        'mcdreforged': '>=1.5.0',
+        'daycount': '*'
+    }
+}
+
 command = '!!joinMOTD'
+config_folder, reconfig_path, logger = '', '', None
 readme_text = '''
-本说明由{0} (插件版本: {1} Version {2})自动生成, 修订时间: 2021-07-18 11:08:00
+本说明由{0} (插件版本: {1} Version {2})自动生成, 修订时间: 2021-08-07 13:42:00
 生成时间: {3}
 
 一. 时间特定的欢迎文本：
@@ -53,6 +58,7 @@ readme_text = '''
     将当前时间与该文件名所表示的时间表达式进行匹配
     当且仅当全部元素匹配成功时显示该文本文件中的文字
     当元素未指定时默认为匹配成功
+    星期几的范围为0-6, 0为星期日, 1为星期一, 以此类推
 2.<秒>_<分>_<时>_<日>_<月>_<年>;<秒>_<分>_<时>_<日>_<月>_<年>.txt
     将当前时间与该文件名所表示的两个时间点进行比较
     当且仅当目前时间处于两者之间的闭区间中时(无所谓时间)显示该文本文件中的文字
@@ -70,14 +76,34 @@ DEFAULT_TEXT = r'''
 今天是 §e?§r 开服的第 §e%day%§r 天
 §7-------§r Server List §7-------§r
 %serverlist: survival mirror creative%
-''' # Do not change this!!
+'''  # Do not change this!!
 
 OLD_TEXT_FILE = 'config/adv_joinmotd.txt'
-TimeFormat = collections.namedtuple('time_format', 'sec min hrs date mon yrs day')
-STYLE_ELEMENTS = {'§4': '绛红', '§c': '鲜红', '§6': '橙', '§e': '黄', '§2': '深绿', '§a': '黄绿', 
-    '§b': '浅青', '§3': '青', '§1': '深蓝', '§9': '蓝', '§d': '品红', '§5': '深紫', 
-    '§f': '白', '§7': '浅灰', '§8': '灰', '§0': '黑', 
-    '§r': '取消样式与颜色', '§l': '加粗', '§o': '斜体', '§n': '下划线', '§m': '删除线', '§k': '混淆'}
+STYLE_ELEMENTS = {'§4': '绛红', '§c': '鲜红', '§6': '橙', '§e': '黄', '§2': '深绿', '§a': '黄绿',
+                  '§b': '浅青', '§3': '青', '§1': '深蓝', '§9': '蓝', '§d': '品红', '§5': '深紫',
+                  '§f': '白', '§7': '浅灰', '§8': '灰', '§0': '黑',
+                  '§r': '取消样式与颜色', '§l': '加粗', '§o': '斜体', '§n': '下划线', '§m': '删除线', '§k': '混淆'}
+
+
+class TimeFormat:
+    def __init__(self, sec: int, mins: int, hrs: int, date: int, mon: int, yrs: int, day: Optional[int] = None):
+        self.__data = {
+            'sec': sec, 'min': mins, 'hrs': hrs, 'date': date, 'mon': mon, 'yrs': yrs
+        }
+        if day is not None:
+            self.__data['day'] = day
+        self.__dict__.update(self.__data)
+
+    @classmethod
+    def make(cls, iters: List[int]):
+        if len(iters) in [6, 7]:
+            return TimeFormat(*iters)
+        else:
+            raise TypeError('Length should be 6 or 7')
+
+    def asdict(self):
+        return self.__data
+
 
 class Func:
     def __init__(self, func) -> None:
@@ -89,7 +115,9 @@ class Func:
 
 class LineFormatter:
     HOVER_ELEMENTS = {'7': '执行', '8': '补全', 'a': '复制', 'n': '访问'}
-    CLICK_EVENTS = {'7': RAction.run_command, '8': RAction.suggest_command, 'a': RAction.copy_to_clipboard, 'n': RAction.open_url}
+    CLICK_EVENTS = {
+        '7': RAction.run_command, '8': RAction.suggest_command, 'a': RAction.copy_to_clipboard, 'n': RAction.open_url
+    }
     pattern = r'%[\S ]*?%'
 
     def __init__(self, text: str, player: str, server: Optional[ServerInterface] = None):
@@ -101,9 +129,9 @@ class LineFormatter:
 
     @staticmethod
     def __remove_comment(imports: str, *args, **kwargs) -> str:
-        '''
+        """
         # 单行注释, #之后的文本将不予显示, 如需在文本中包含#请使用\#代替#
-        '''
+        """
         splitted = imports.split('#')
         ret = ''
         for num in range(len(splitted)):
@@ -115,94 +143,108 @@ class LineFormatter:
         return ret
 
     def __get_player(self, imports: str, *args, **kwargs) -> str:
-        '''
+        """
         %player% 上线玩家名称
-        '''
+        """
         return self.player
 
-    @staticmethod
-    def __get_daycount(imports: str, *args, **kwargs) -> str:
-        '''
+    def __get_daycount(self, imports: str, *args, **kwargs) -> str:
+        """
         %day% 开服时间
-        '''
-        if daycount_imported:
-            return getday()
-        return imports
-    
+        """
+        if hasattr(self.server, 'get_plugin_instance'):
+            return self.server.get_plugin_instance('daycount').getday()
+
     @staticmethod
     def __get_day(imports: str, *args, **kwargs) -> str:
-        '''
+        """
         %since: <date>% 自某日开始至今的日期的绝对值, 输入日期应形如yyyy-mm-dd
-        '''
+        """
         output = datetime.datetime.now() - datetime.datetime.strptime(imports[6:].strip(), '%Y-%m-%d')
         return str(abs(output.days))
 
     @staticmethod
-    def __get_serverlist(imports: str, *args, **kwargs) -> RTextList:
-        '''
+    def __get_serverlist(imports: str, *args, **kwargs) -> Union[RTextBase, str]:
+        """
         %serverlist: <servers>% 群组服子服列表, 引号后接子服务器列表<servers>, 使用逗号分隔, 服务器列表不可换行
-        '''
+        """
         server_list = imports[11:].strip().split(',')
         server_text = ''
         for server_ in server_list:
-            l = parse('[{outer}]({inner})', server_.strip())
-            if l: outer, inner = l['outer'], l['inner']
-            else: outer, inner = server_.strip(), server_.strip()
+            psd = parse('[{outer}]({inner})', server_.strip())
+            outer = psd['outer'] if psd else server_.strip()
+            inner = psd['inner'] if psd else server_.strip()
             server_text += rclick(f'[§7{outer}§r]', f'点击跳转到 §7{inner}§r', f'/server {inner}') + ' '
         return server_text
-    
+
     def __get_playerlist(self, imports: str, *args, **kwargs) -> str:
-        '''
+        """
         %playerlist% 当前全部玩家列表, 需要有效的rcon连接
-        '''
-        try:
+        """
+        raw_rcdata = None
+        if hasattr(self.server, 'rcon_query'):
             raw_rcdata = self.server.rcon_query('list')
-        except:
-            raw_rcdata = None
         if raw_rcdata is not None:
             player_list = str(raw_rcdata).split(' players online:')[1].strip().split(',')
             playerlist = ''
             for player_name in player_list:
-                if playerlist != '': playerlist += ', '
+                playerlist += ', ' if playerlist != '' else ''
                 playerlist += player_name.strip()
-            return player_list
+            return playerlist
         return imports
 
     @staticmethod
+    def __get_mcdr_version(imports: str, *args, **kwargs) -> str:
+        """
+        %mcdrVersion% 当前MCDReforged版本
+        """
+        return MCDR_VERSION
+
+    @staticmethod
+    def __get_plugin_version(imports: str, *args, **kwargs) -> str:
+        """
+        %pluginVersion% 当前Advanced Join MOTD的版本
+        """
+        return PLUGIN_METADATA['version']
+
+    @staticmethod
     def __get_server_version(imports: str, *args, **kwargs) -> str:
-        '''
+        """
         %version: <server_jar>% 原版服务端的版本, <server_jar>应为MCDR配置文件中填写的工作目录下有效的原版服务端
-        '''
-        try: 
+        """
+        try:
             server_path = os.path.join(get_server_folder(), imports[8:].strip())
-            with getServerJSON(server_path):
-                with open(os.path.join(get_server_folder(), 'version.json'), 'r', encoding = 'UTF-8') as f:
+            with GetServerJSON(server_path):
+                with open(os.path.join(get_server_folder(), 'version.json'), 'r', encoding='UTF-8') as f:
                     return json.load(f)['name']
         except FileNotFoundError:
             return imports
 
     @staticmethod
-    def __get_text_from_api(imports, *args, **kwargs) -> str:
-        '''
+    def __get_text_from_api(imports: str, *args, **kwargs) -> str:
+        """
         %API: <url>% 从API获取文本并显示, 引号后接API地址
-        '''
-        try:
-            return urlopen(imports[4:]).read().decode('utf8').strip()
-        except:
+        """
+        ret = urlopen(imports[4:])
+        if hasattr(ret, 'read'):
+            return ret.read().decode('utf8').strip() if ret.read() is not None else imports
+        else:
             return imports
 
     @classmethod
-    def __get_click_event(cls, imports, *args, **kwargs) -> RTextBase:
-        '''
-        %7<text>% 一段含点击事件的浅灰色字符, 点击事件为执行指令, 指令内容即为<text>代表的字符串
-        %8<text>% 一段含点击事件的浅灰色字符, 点击事件为补全指令, 指令内容即为<text>代表的字符串
-        %a<text>% 一段含点击事件的黄绿色字符, 点击事件为复制到剪贴板, 复制内容即为<text>代表的字符串
-        %n<text>% 一段含点击事件的下划线字符, 点击事件为访问外部URL链接, URL即为<text>代表的字符串
-        '''
-        l = parse('{event}[{name}]({content})', imports)
-        if l: pre, event, hover, name, content = l['event'], cls.CLICK_EVENTS[l['event']], cls.HOVER_ELEMENTS[l['event']], l['name'], l['content']
-        else: pre, event, hover, name, content = list(imports)[0], cls.CLICK_EVENTS[list(imports)[0]], cls.HOVER_ELEMENTS[list(imports)[0]], imports[1:], clean(imports[1:])
-        if pre == '8': pre, content = '7', content.strip() + ' '
+    def __get_click_event(cls, imports: str, *args, **kwargs) -> RTextBase:
+        """
+        %7<text>% 浅灰色字符, 点击可执行包含的指令, <text>处可直接填写完整指令(或对应点击事件的内容), <text>也可填写符合格式[文本](点击事件的指令、复制内容或外部URL)的内容以使显示的文本与点击执行的内容不一致
+        %8<text>% 浅灰色字符, 点击补全可执行包含的指令, <text>填写方法同上
+        %a<text>% 黄绿色字符, 点击复制到剪贴板, <text>填写方法同上
+        %n<text>% 带下划线字符, 点击访问外部URL链接, <text>填写方法同上
+        """
+        psd = parse('{event}[{name}]({content})', imports)
+        pre = psd['event'] if psd else list(imports)
+        event = ls.CLICK_EVENTS[psd['event']] if psd else cls.CLICK_EVENTS[list(imports)[0]]
+        hover = cls.HOVER_ELEMENTS[psd['event']] if psd else cls.HOVER_ELEMENTS[list(imports)[0]]
+        name = psd['name'] if psd else imports[1:]
+        content = psd['content'] if psd else clean(imports[1:])
         return rclick(f"§{pre}{name}§r", f"点击{hover} §7{content}§r", content, event)
 
     @property
@@ -214,10 +256,13 @@ class LineFormatter:
             'playerlist': Func(self.__get_playerlist),
             'serverlist:': Func(self.__get_serverlist),
             'API:': Func(self.__get_text_from_api),
-            'version:': Func(self.__get_server_version)
+            'version:': Func(self.__get_server_version),
+            'mcdrVersion': Func(self.__get_mcdr_version),
+            'pluginVersion': Func(self.__get_plugin_version)
         }
         cle = {}
-        for key in self.CLICK_EVENTS.keys(): cle[key] = Func(self.__get_click_event)
+        for key in self.CLICK_EVENTS.keys():
+            cle[key] = Func(self.__get_click_event)
         actions.update(cle)
         return actions
 
@@ -246,19 +291,22 @@ class LineFormatter:
         final_line = ''
         for num in range(len(self.normal_text)):
             final_line += str(self.normal_text[num])
-            if num + 1 == len(self.normal_text): break
+            if num + 1 == len(self.normal_text):
+                break
             final_line += rtext_converted[num]
         return final_line
 
 
-class getServerJSON:
+class GetServerJSON:
     def __init__(self, server_file: str):
         self.pkg = ZipFile(server_file)
         self.server_folder = os.path.split(server_file)[0]
         self.js = os.path.join(self.server_folder, 'version.json')
+
     def __enter__(self):
         self.pkg.extract('version.json', self.server_folder)
-    def __exit__(self, type, value, stack_info):
+
+    def __exit__(self, types, value, stack_info):
         os.remove(self.js)
 
 
@@ -267,7 +315,7 @@ def get_server_folder():
         return yaml.round_trip_load(f)['working_directory']
 
 
-def convert_text(server: ServerInterface, text: str, player) -> RTextBase:
+def convert_text(server: ServerInterface, text: str, player) -> Union[RTextBase, str]:
     return_text = ''
     for line in text.splitlines():
         if return_text != '':
@@ -280,12 +328,12 @@ def convert_text(server: ServerInterface, text: str, player) -> RTextBase:
 
 def get_text() -> str:
     text_file = os.path.join(config_folder, choose_file())
-    with open(text_file, 'r', encoding = 'UTF-8') as f:
+    with open(text_file, 'r', encoding='UTF-8') as f:
         text = f.read()
     return text
 
 
-def now_time(unix = False):
+def now_time(unix=False):
     if unix:
         return int(time.mktime(datetime.datetime.now().timetuple()))
     return datetime.datetime.now()
@@ -296,10 +344,7 @@ def nowdict():
     now_list = []
     for element in now_list_raw:
         now_list.append(int(element))
-    now_list[-1] += 1
-    if now_list[-1] == 7:
-        now_list[-1] = 0
-    return TimeFormat._make(now_list)._asdict()
+    return TimeFormat.make(now_list).asdict()
 
 
 def is_matched(dt: dict):
@@ -309,26 +354,31 @@ def is_matched(dt: dict):
             value_after = None
         else:
             value_after = int(value)
-        if not bool(value_after == now_dict[key] or value_after is None):
+        logger.debug('{}: 表达式中为{}, 当前为{}'.format(key, value_after, now_dict[key]))
+        ret = value_after in [now_dict[key], None]
+        logger.debug('{}符合条件'.format('' if ret else '不'))
+        if not ret:
             return False
     return True
 
 
 def to_unix_timestamp(t: TimeFormat):
     logger.debug(time.mktime(time.strptime(f'{t.sec} {t.min} {t.hrs} {t.date} {t.mon} {t.yrs}', '%S %M %H %d %m %Y')))
-    return time.mktime(time.strptime(f'{t.sec} {t.min} {t.hrs} {t.date} {t.mon} {t.yrs}', '%S %M %H %d %m %Y'))
+    return int(time.mktime(time.strptime(f'{t.sec} {t.min} {t.hrs} {t.date} {t.mon} {t.yrs}', '%S %M %H %d %m %Y')))
 
 
 def is_in_range(from_time: int, to_time: int):
     now_timestamp = now_time(True)
     logger.debug('当前的时间戳为: ' + str(now_timestamp))
     time_list = [from_time, to_time, now_timestamp]
+    logger.debug('符合该条件的最小时间为: {} 最大时间为: {}'.format(from_time, to_time))
     if max(time_list) != now_timestamp and min(time_list) != now_timestamp:
-        return True
+        ret = True
     elif now_timestamp == from_time or now_timestamp == to_time:
-        return True
+        ret = True
     else:
-        return False
+        ret = False
+    logger.debug('当前时间{}在该范围中'.format('' if ret else '不'))
 
 
 def convert_from_to(format_from_to: dict):
@@ -341,14 +391,14 @@ def convert_from_to(format_from_to: dict):
                 formatted_from_to.append(nowdict()[key.replace('from_', '').replace('to_', '')])
         else:
             formatted_from_to.append(int(value))
-    from_time = TimeFormat._make(formatted_from_to[:6] + [None])
-    to_time = TimeFormat._make(formatted_from_to[6:] + [None])
+    from_time, to_time = TimeFormat.make(formatted_from_to[:6]), TimeFormat.make(formatted_from_to[6:])
     return to_unix_timestamp(from_time), to_unix_timestamp(to_time)
 
 
 def is_current(file_name: str):
     ret = 'regular.txt'
-    format_from_to = parse('{from_sec}_{from_min}_{from_hrs}_{from_date}_{from_mon}_{from_yrs};{to_sec}_{to_min}_{to_hrs}_{to_date}_{to_mon}_{to_yrs}.txt', file_name)
+    format_from_to = parse('{from_sec}_{from_min}_{from_hrs}_{from_date}_{from_mon}_{from_yrs};' +
+                           '{to_sec}_{to_min}_{to_hrs}_{to_date}_{to_mon}_{to_yrs}.txt', file_name)
     if format_from_to is not None:
         from_time, to_time = convert_from_to(format_from_to.named)
         if is_in_range(from_time, to_time):
@@ -372,19 +422,6 @@ def choose_file():
     return current_file
 
 
-def converted(text, num, max):
-    try:
-        if text[0] == '%' and num != 0:
-            text.pop(0)
-        if text[-1] == '%' and num != max - 1:
-            text.pop(-1)
-    except: pass
-    text_after = ''
-    for item in text:
-        text_after += item
-    return text_after
-
-
 def clean(msg: str):
     for item in STYLE_ELEMENTS.keys():
         msg = msg.replace(item, '')
@@ -403,9 +440,10 @@ def on_player_joined(server: ServerInterface, player: str, info: Info):
         raise
 
 
-def rclick(message: str, hover_text: str, click_content: str, click_event = RAction.run_command, color = RColor.white, style = None):
+def rclick(message: str, hover_text: str, click_content: str,
+           click_event=RAction.run_command, color=RColor.white, style=None):
     ret = RText(message, color).set_hover_text(hover_text).set_click_event(click_event, click_content)
-    if style != None:
+    if style is not None:
         return ret.set_styles(style)
     return ret
 
@@ -420,11 +458,10 @@ def on_load(server: ServerInterface, prev_module):
     global logger
     generate_config(server)
     server.register_help_message(command, '显示欢迎消息')
-    
 
     class DebugLogger(server.logger.__class__):
         DEFAULT_NAME = 'AdvJoinMOTD'
-    
+
         def debug(self, *args):
             if verbose_mode:
                 super(server.logger.__class__, self).debug(*args)
@@ -436,7 +473,6 @@ def on_load(server: ServerInterface, prev_module):
             self.file_handler.setFormatter(self.FILE_FMT)
             self.addHandler(self.file_handler)
             return self
-
 
     logger = DebugLogger(server)
 
@@ -487,7 +523,6 @@ def generate_config(server: ServerInterface):
     if not os.path.isdir(config_folder):
         os.mkdir(config_folder)
 
-    
     if os.path.isfile(OLD_TEXT_FILE) and not os.path.isfile(reconfig_path):
         shutil.move(OLD_TEXT_FILE, reconfig_path)
     if not os.path.isfile(reconfig_path):
