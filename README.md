@@ -10,7 +10,7 @@ Because I'm lazy so this plugin is not available in English yet, if you need thi
 
 ## 中文
 
-[更新日志](./changelog.log)
+[更新日志](./changelog.md)
 
 高度可自定义的加入欢迎信息
 
