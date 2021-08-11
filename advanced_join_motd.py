@@ -5,7 +5,6 @@ import json
 import shutil
 import logging
 import datetime
-import collections
 
 from mcdreforged.api.all import *
 from parse import parse
@@ -13,14 +12,6 @@ from typing import Optional, Union, List
 from urllib.request import urlopen
 from zipfile import ZipFile
 from ruamel import yaml
-
-try:
-    from mcdreforged.constants.core_constant import VERSION as MCDR_VERSION
-except ImportError:
-    try:
-        from mcdreforged.constant import VERSION as MCDR_VERSION
-    except ImportError:
-        MCDR_VERSION = 'Invalid version'
 
 
 # 1.x metadata
@@ -30,7 +21,7 @@ plg_desc = 'Custom your own join MOTD.'
 verbose_mode = True
 PLUGIN_METADATA = {
     'id': plg_id,
-    'version': '0.6.0-alpha1',
+    'version': '0.6.0-alpha2',
     'name': plg_id,
     'description': plg_desc,
     'author': 'Ra1ny_Yuki',
@@ -154,6 +145,7 @@ class LineFormatter:
         """
         if hasattr(self.server, 'get_plugin_instance'):
             return self.server.get_plugin_instance('daycount').getday()
+        return imports
 
     @staticmethod
     def __get_day(imports: str, *args, **kwargs) -> str:
@@ -193,12 +185,16 @@ class LineFormatter:
             return playerlist
         return imports
 
-    @staticmethod
-    def __get_mcdr_version(imports: str, *args, **kwargs) -> str:
+    def __get_mcdr_version(self, imports: str, *args, **kwargs) -> str:
         """
         %mcdrVersion% 当前MCDReforged版本
         """
-        return MCDR_VERSION
+        mcdr_meta = self.server.get_plugin_metadata('mcdreforged')
+        if hasattr(mcdr_meta, 'version'):
+            return str(mcdr_meta.version)
+        else:
+            from mcdreforged.constant import VERSION
+            return VERSION
 
     @staticmethod
     def __get_plugin_version(imports: str, *args, **kwargs) -> str:
@@ -241,7 +237,7 @@ class LineFormatter:
         """
         psd = parse('{event}[{name}]({content})', imports)
         pre = psd['event'] if psd else list(imports)
-        event = ls.CLICK_EVENTS[psd['event']] if psd else cls.CLICK_EVENTS[list(imports)[0]]
+        event = cls.CLICK_EVENTS[psd['event']] if psd else cls.CLICK_EVENTS[list(imports)[0]]
         hover = cls.HOVER_ELEMENTS[psd['event']] if psd else cls.HOVER_ELEMENTS[list(imports)[0]]
         name = psd['name'] if psd else imports[1:]
         content = psd['content'] if psd else clean(imports[1:])
