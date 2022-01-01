@@ -1,0 +1,9 @@
+advanced_join_motd.help.mcdr: 显示欢迎信息
+
+advanced_join_motd.msg.motd_gen: 新的默认欢迎信息已生成
+advanced_join_motd.msg.sche_gen: 新的默认计划任务已生成
+advanced_join_motd.msg.addi_gen: 新的默认额外配置已生成
+
+advanced_join_motd.exc.occurred: 'Advanced Join MOTD出现错误, 请通知管理员处理, 错误如下: \n§c{e}§r'
+
+advanced_join_motd.click.jump_server: 点击加入 §7{server}§r

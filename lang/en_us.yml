@@ -1,0 +1,10 @@
+advanced_join_motd.help.mcdr: Display welcome text
+
+advanced_join_motd.msg.motd_gen: A new default JoinMOTD generated
+advanced_join_motd.msg.sche_gen: A new default schedule generated
+advanced_join_motd.msg.addi_gen: A new default extra config generated
+
+
+advanced_join_motd.exc.occurred: 'Error occurred while running Advanced Join MOTD: \n§c{e}§r'
+
+advanced_join_motd.click.jump_server: Click to enter §7{server}§r
