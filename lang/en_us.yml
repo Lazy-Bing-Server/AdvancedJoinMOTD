@@ -1,10 +1,47 @@
-advanced_join_motd.help.mcdr: Display welcome text
-
-advanced_join_motd.msg.motd_gen: A new default JoinMOTD generated
-advanced_join_motd.msg.sche_gen: A new default schedule generated
-advanced_join_motd.msg.addi_gen: A new default extra config generated
-
-
-advanced_join_motd.exc.occurred: 'Error occurred while running Advanced Join MOTD: \n§c{e}§r'
-
-advanced_join_motd.click.jump_server: Click to enter §7{server}§r
+advanced_join_motd:
+  help:
+    mcdr: Display welcome text
+    detailed: |
+      §8-----§e {plg_name} §rv{ver} §8-----§r
+      §7{prefix}§r Show this help message
+      §7{prefix} init§r Initialize some configuration
+      §7{prefix} preview§r Preview current JoinMOTD
+      §7{prefix} preview §6<file>§r Preview selected JoinMOTD
+      §7{prefix} info §6<file>§r Show selected file & schedule info
+    init: |
+      §7{prefix} init motd §6<file>§r Initialize a JoinMOTD file in plugin folder
+      §7{prefix} init schedule §r Initialize a schedule in config file
+  hover:
+    preview: 'Click to view JoinMOTD file §e{file}§r content'
+    suggest: 'Click to fill §7{cmd}'
+  info:
+    file:
+      title: 'JoinMOTD File §e{file}§r info:'
+      content: 'JoinMOTD Content: '
+      click_here: 'Click here to view content'
+    sched:
+      both_not_found: 'Both the file and the schedule DO NOT exist'
+      found: 'Found {num} schedule(s) including this file:'
+      not_found: 'Found no file but {num} schedule(s) including this file:'
+      year: 'Match year: '
+      mon: 'Match month: '
+      mday: 'Match day in a month: '
+      hour: 'Match hour: '
+      min: 'Match minute: '
+      secs: 'Match seconds: '
+      wday: 'Match day in a week: '
+      yday: 'Match day in a year: '
+      from_time: 'Match minimum timestamp: '
+      to_time: 'Match maximum timestamp: '
+      player_blacklist: 'Player blacklist: '
+      player_whitelist: 'Player whitelist: '
+      priority: 'Priority: '
+  click:
+    jump_server: Click to enter §7{server}§r
+  msg:
+    reload_done: Plugin reloaded
+    addi_gen: A new default extra config generated
+    motd_gen: A new default JoinMOTD generated
+    sche_gen: A new default schedule generated
+  exc:
+    occurred: 'Error occurred while running Advanced Join MOTD: §c{e}§r'

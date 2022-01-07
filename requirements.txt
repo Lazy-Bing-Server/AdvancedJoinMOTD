@@ -1,5 +1,6 @@
 # Add your python package requirements here, just like regular requirements.txt
 
 logging
-mcdreforged>=2.1.3
+mcdreforged
 parse
+requests

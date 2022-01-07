@@ -1,9 +1,47 @@
-advanced_join_motd.help.mcdr: 显示欢迎信息
-
-advanced_join_motd.msg.motd_gen: 新的默认欢迎信息已生成
-advanced_join_motd.msg.sche_gen: 新的默认计划任务已生成
-advanced_join_motd.msg.addi_gen: 新的默认额外配置已生成
-
-advanced_join_motd.exc.occurred: 'Advanced Join MOTD出现错误, 请通知管理员处理, 错误如下: \n§c{e}§r'
-
-advanced_join_motd.click.jump_server: 点击加入 §7{server}§r
+advanced_join_motd:
+  help:
+    mcdr: 显示欢迎信息
+    detailed: |
+      §8-----§e {plg_name} §rv{ver} §8-----§r
+      §7{prefix}§r 显示此帮助信息
+      §7{prefix} init§r 初始化某些设定
+      §7{prefix} preview§r 预览当前的JoinMOTD
+      §7{prefix} preview §6<文件名>§r 预览选定的JoinMOTD
+      §7{prefix} info §6<文件名>§r 显示选定的文件及其计划任务
+    init: |
+      §7{prefix} init motd §6<文件名>§r 在插件目录中初始化一个JoinMOTD方案文件
+      §7{prefix} init schedule §r 在配置文件中初始化一个计划任务
+  hover:
+    preview: '点此预览 §e{file}§r 的内容'
+    suggest: '点此填入 §7{cmd}'
+  info:
+    file:
+      title: 'JoinMOTD文件 §e{file}§r 详情如下:'
+      content: 'JoinMOTD 内容: '
+      click_here: '点此查看内容'
+    sched:
+      both_not_found: '文件和计划任务中均未找到该文件'
+      found: '找到了 {num} 个包含该文件的计划任务:'
+      not_found: '未找到该文件, 但找到了 {num} 个包含该文件的计划任务:'
+      year: '匹配年份: '
+      mon: '匹配月份: '
+      mday: '匹配一个月里的天数: '
+      hour: '匹配小时: '
+      min: '匹配分钟: '
+      secs: '匹配秒: '
+      wday: '匹配一周中的天数: '
+      yday: '匹配一年里的天数: '
+      from_time: '限定最小时间戳: '
+      to_time: '限定最大时间戳: '
+      player_blacklist: '玩家黑名单: '
+      player_whitelist: '玩家白名单: '
+      priority: '优先级: '
+  click:
+    jump_server: 点击加入 §7{server}§r
+  msg:
+    reload_done: 已重载本插件
+    addi_gen: 新的默认额外配置已生成
+    motd_gen: 新的默认欢迎信息已生成
+    sche_gen: 新的默认计划任务已生成
+  exc:
+    occurred: 'Advanced Join MOTD出现错误, 请通知管理员处理, 错误如下: §c{e}§r'

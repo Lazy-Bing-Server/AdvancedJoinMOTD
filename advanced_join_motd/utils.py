@@ -1,15 +1,18 @@
 from mcdreforged.api.all import ServerInterface, RTextMCDRTranslation, MCDReforgedLogger
+from datetime import datetime
 import logging
 import os
-import datetime, time
+import time
+
 
 VERBOSE = True
-gl_server = ServerInterface.get_instance().as_plugin_server_interface()
-ajm_folder = gl_server.get_data_folder()
+gl_server = None if ServerInterface.get_instance() is None else ServerInterface.get_instance().as_plugin_server_interface()
+ajm_folder = gl_server.get_data_folder() if gl_server is not None else ''
 motd_folder = os.path.join(ajm_folder, 'motds')
 tr_folder = os.path.join(ajm_folder, 'translation')
 config_path = os.path.join(ajm_folder, 'config.yml')
 log_path = os.path.join(ajm_folder, 'ajm.log')
+random_text_path = os.path.join(ajm_folder, 'random_text.yml')
 
 
 class DebugLogger(MCDReforgedLogger):
@@ -41,16 +44,21 @@ def now_dict():
 
 def now_time(unix=False):
     if unix:
-        return int(time.mktime(datetime.datetime.now().timetuple()))
-    return datetime.datetime.now()
+        return int(time.mktime(datetime.now().timetuple()))
+    return datetime.now()
 
 
-def tr(key: str, *args, **kwargs) -> RTextMCDRTranslation:
-    key = f'{gl_server.get_self_metadata().id}.{key}' if not key.startswith(gl_server.get_self_metadata().id) else key
-    return gl_server.rtr(key, *args, *kwargs)
+def tr(key: str, *args, with_prefix: bool = True, **kwargs) -> RTextMCDRTranslation:
+    if not key.startswith(gl_server.get_self_metadata().id + '.') and with_prefix:
+        key = f'{gl_server.get_self_metadata().id}.{key}'
+    return gl_server.rtr(key, *args, **kwargs)
 
 
 def get_default_motd_file_name():
+    if gl_server is None:
+        return ''
+    if not os.path.isdir(motd_folder):
+        os.makedirs(motd_folder)
     file_list = os.listdir(motd_folder)
     fmt = 'new_motd{}.yml'
     if fmt.format('') not in file_list:
