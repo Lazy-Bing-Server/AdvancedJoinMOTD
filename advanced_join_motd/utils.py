@@ -1,11 +1,13 @@
-from mcdreforged.api.all import ServerInterface, RTextMCDRTranslation, MCDReforgedLogger
-from datetime import datetime
 import logging
 import os
 import time
 
+from mcdreforged.api.all import ServerInterface, RTextMCDRTranslation, MCDReforgedLogger
+from datetime import datetime
+from typing import Union
 
-VERBOSE = True
+
+VERBOSE = False
 gl_server = None if ServerInterface.get_instance() is None else ServerInterface.get_instance().as_plugin_server_interface()
 ajm_folder = gl_server.get_data_folder() if gl_server is not None else ''
 motd_folder = os.path.join(ajm_folder, 'motds')
@@ -32,6 +34,40 @@ class DebugLogger(MCDReforgedLogger):
 
 
 logger = DebugLogger()
+
+
+class AdvancedInteger:
+    def __init__(self, value: int):
+        self.value = value
+
+    @property
+    def digits_list(self):
+        return [int(num) for num in list(str(self.value))]
+
+    def __len__(self):
+        return len(self.digits_list)
+
+    def __getitem__(self, item: Union[str, int, float]):
+        ind = int(item)
+        return 0 if (ind >= 0 and ind + 1 > len(self)) or (ind < 0 and abs(ind) > len(self)) else self.digits_list[ind]
+
+    @property
+    def ordinal(self) -> str:
+        if self[-2] == 1:
+            return f'{self.value}th'
+        elif self[-1] not in (1, 2, 3):
+            return f'{self.value}th'
+        elif self[-1] == 1:
+            return f'{self.value}st'
+        elif self[-1] == 2:
+            return f'{self.value}nd'
+        elif self[-1] == 3:
+            return f'{self.value}rd'
+        else:
+            return ''
+
+    def __str__(self):
+        return str(self.value)
 
 
 def now_dict():
