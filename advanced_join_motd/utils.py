@@ -4,17 +4,18 @@ import time
 
 from mcdreforged.api.all import ServerInterface, RTextMCDRTranslation, MCDReforgedLogger
 from datetime import datetime
-from typing import Union
+from typing import Union, Tuple
 
 
-VERBOSE = False
-gl_server = None if ServerInterface.get_instance() is None else ServerInterface.get_instance().as_plugin_server_interface()
-ajm_folder = gl_server.get_data_folder() if gl_server is not None else ''
-motd_folder = os.path.join(ajm_folder, 'motds')
-tr_folder = os.path.join(ajm_folder, 'translation')
-config_path = os.path.join(ajm_folder, 'config.yml')
-log_path = os.path.join(ajm_folder, 'ajm.log')
-random_text_path = os.path.join(ajm_folder, 'random_text.yml')
+VERBOSE = True
+__server = ServerInterface.get_instance()
+gl_server = None if __server is None else __server.as_plugin_server_interface()
+DATA_FOLDER = gl_server.get_data_folder() if gl_server is not None else ''
+SCHEME_FOLDER = os.path.join(DATA_FOLDER, 'schemes')
+TRANSLATION_FOLDER = os.path.join(DATA_FOLDER, 'translation')
+CONFIG_PATH = os.path.join(DATA_FOLDER, 'config.yml')
+LOG_PATH = os.path.join(DATA_FOLDER, 'ajm.log')
+RANDOM_TEXT_PATH = os.path.join(DATA_FOLDER, 'random_text.yml')
 
 
 class DebugLogger(MCDReforgedLogger):
@@ -36,6 +37,7 @@ class DebugLogger(MCDReforgedLogger):
 logger = DebugLogger()
 
 
+# TODO: Add it to the next version
 class AdvancedInteger:
     def __init__(self, value: int):
         self.value = value
@@ -93,9 +95,9 @@ def tr(key: str, *args, with_prefix: bool = True, **kwargs) -> RTextMCDRTranslat
 def get_default_motd_file_name():
     if gl_server is None:
         return ''
-    if not os.path.isdir(motd_folder):
-        os.makedirs(motd_folder)
-    file_list = os.listdir(motd_folder)
+    if not os.path.isdir(SCHEME_FOLDER):
+        os.makedirs(SCHEME_FOLDER)
+    file_list = os.listdir(SCHEME_FOLDER)
     fmt = 'new_motd{}.yml'
     if fmt.format('') not in file_list:
         return fmt.format('')
@@ -103,3 +105,14 @@ def get_default_motd_file_name():
     while True:
         if fmt.format(f'_{str(num)}') not in file_list:
             return fmt.format(f'_{str(num)}')
+
+
+def get_self_version() -> Tuple[str, int]:
+    meta = gl_server.get_self_metadata()
+    version = meta.version
+    version_str = '.'.join(map(lambda c: str(c) if c != version.WILDCARD else version.WILDCARDS[0], version.component))
+    if version.pre is not None:
+        version_str += '-' + str(version.pre)
+    build = 0 if version.build is None else version.build.num
+    return version_str, build
+

@@ -1,7 +1,7 @@
 import os
 import random
 
-from advanced_join_motd.utils import random_text_path
+from advanced_join_motd.utils import RANDOM_TEXT_PATH
 from typing import Dict, Optional
 from ruamel import yaml
 
@@ -44,4 +44,4 @@ class RandomManager:
                 yaml.round_trip_dump(self.DEFAULT, f, allow_unicode=True)
 
 
-random_text_manager = RandomManager(random_text_path)
+random_text_manager = RandomManager(RANDOM_TEXT_PATH)

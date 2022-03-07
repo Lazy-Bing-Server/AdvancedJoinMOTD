@@ -4,7 +4,7 @@ from advanced_join_motd.config import *
 def init_default_motd(file: str):
     if os.path.isfile(file):
         raise FileExistsError(file)
-    JoinMOTD.init_default(file)
+    JoinMOTDScheme.init_default(file)
 
 
 def init_schedule(file: str):

@@ -1,6 +1,6 @@
 {
     "id": "advanced_join_motd",
-    "version": "0.7.0-alpha.2",
+    "version": "0.7.1-alpha.1+build.13",
     "name": "Advanced Join MOTD",
     "description": {
         "en_us": "Custom your own join MOTD.",

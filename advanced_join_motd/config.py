@@ -15,8 +15,7 @@ from itertools import groupby
 from copy import copy
 
 from advanced_join_motd.random_pools import random_text_manager
-from .utils import get_default_motd_file_name, config_path, motd_folder, tr, gl_server, logger
-
+from .utils import get_default_motd_file_name, CONFIG_PATH, SCHEME_FOLDER, tr, gl_server, logger, get_self_version
 
 additional_settings: Optional['AdditionalSettings'] = None
 
@@ -34,7 +33,7 @@ class SpecialParameter:
                 mcdr_version=str(gl_server.get_plugin_metadata('mcdreforged').version),
                 minecraft_version=str(gl_server.get_server_information().version),
                 player_list='' if api is None else ', '.join(api.get_server_player_list()[2]),
-                this_plugin_version=str(gl_server.get_self_metadata().version)
+                this_plugin_version=str(get_self_version()[0])
             )
         else:
             self.data = dict()
@@ -61,11 +60,13 @@ class Schedule(Serializable):
 
     def __lt__(self, other: 'Schedule'):
         if int(self.priority) != int(other.priority):
-            return self.priority > other.priority
+            return self.priority < other.priority
         other_data = other.serialize()
         for key, value in self.serialize().items():
-            if value != other_data[key]:
-                return 0 if value is None else value > 0 if other_data[key] is None else other_data[key]
+            self_value = 0 if value is None else value
+            other_value = 0 if other_data[key] is None else other_data[key]
+            if self_value != other_value:
+                return self_value < other_value
         return False
 
     def __eq__(self, other):
@@ -73,6 +74,10 @@ class Schedule(Serializable):
 
     def __le__(self, other):
         return self == other or self < other
+
+    @property
+    def file_name(self):
+        return self.file if self.file.endswith('.yml') else f'{self.file}.yml'
 
     @property
     def time(self) -> dict:
@@ -86,27 +91,24 @@ class Schedule(Serializable):
         timestamp = time.time() if timestamp is None else timestamp
         tm = time.localtime(timestamp)
         if player is not None and bool(
-                        bool(
-                            self.player_blacklist is not None and player in self.player_blacklist
-                        ) or bool(
-                            self.player_whitelist is not None and player not in self.player_whitelist
-                        )
-                ):
+                bool(
+                    self.player_blacklist is not None and player in self.player_blacklist
+                ) or bool(
+                    self.player_whitelist is not None and player not in self.player_whitelist
+                )
+        ):
             return False
         if self.from_time is not None and self.from_time > timestamp:
             return False
         if self.to_time is not None and self.to_time < self.to_time:
             return False
-        is_empty = all((self.from_time is None, self.to_time is None, self.player_whitelist is None, self.player_blacklist is None))
+        is_empty = all((self.from_time is None, self.to_time is None, self.player_whitelist is None,
+                        self.player_blacklist is None))
         for key, value in self.time.items():
             is_empty = is_empty and value is None
             if getattr(tm, f'tm_{key}') != value and value is not None:
                 return False
         return False if is_empty else True
-
-    @property
-    def motd(self):
-        return JoinMOTD.load(self.file)
 
 
 class RTextVariable(Serializable):
@@ -215,8 +217,8 @@ class RTextVariable(Serializable):
         return rt
 
 
-class JoinMOTD(Serializable):
-    format: str = '''
+class JoinMOTDScheme(Serializable):
+    format: Any = '''
 §7=======§r Welcome back to §e{server_name}§7 =======§r
 Today is the §e{day}§r day of §e{main_server_name}§r
 §7-------§r Server List §7-------§r
@@ -225,6 +227,10 @@ Today is the §e{day}§r day of §e{main_server_name}§r
     server_list_inherit_global: bool = True
     additional_server_list: Optional[List[str]] = []
     server_list_format: str = '[§7{server}§r]'
+
+    @property
+    def formatter(self):
+        return str(self.format)
 
     @property
     def server_list(self):
@@ -294,7 +300,7 @@ Today is the §e{day}§r day of §e{main_server_name}§r
     def init_default(cls, file_name: Optional[str] = None, src: Optional[CommandSource] = None):
         file_name = get_default_motd_file_name() if file_name is None else file_name
         file_name += '.yml' if not file_name.endswith('.yml') else ''
-        with open(os.path.join(motd_folder, file_name), 'w', encoding='UTF-8') as f:
+        with open(os.path.join(SCHEME_FOLDER, file_name), 'w', encoding='UTF-8') as f:
             yaml.round_trip_dump(cls.get_default().serialize(), f, allow_unicode=True)
         if isinstance(src, CommandSource):
             src.reply(tr('msg.motd_gen'))
@@ -308,15 +314,15 @@ Today is the §e{day}§r day of §e{main_server_name}§r
         var.update(special_paras.data)
         var.update(dict(server_list=self.server_list_text))
         logger.debug(var)
-        if self.format.strip().startswith(f'{gl_server.get_self_metadata().id}.'):
-            return tr(self.format.strip(), **var)
+        if self.formatter.strip().startswith(f'{gl_server.get_self_metadata().id}.'):
+            return tr(self.formatter.strip(), **var)
         else:
-            return RTextBase.format(self.format.strip(), **var)
+            return RTextBase.format(self.formatter.strip(), **var)
 
     @classmethod
     def load(cls, file_name: str):
-        with open(os.path.join(motd_folder, file_name), 'r', encoding='UTF-8') as f:
-            return cls.deserialize(dict(yaml.YAML(typ='safe').load(f)))
+        with open(os.path.join(SCHEME_FOLDER, file_name), 'r', encoding='UTF-8') as f:
+            return cls.deserialize(dict(yaml.YAML().load(f)))
 
 
 class AdditionalSettings(Serializable):
@@ -341,9 +347,9 @@ class Config(Serializable):
         'server_name': 'Survival Server',
         'main_server_name': 'My Server'
     }
-    default_motd: str = 'default.yml'
+    default_scheme: str = 'default.yml'
     additional_config: Optional[str] = None
-    schedule: List[Schedule] = []
+    schedule: Optional[List[Schedule]] = None
     timeout: int = 10
     start_day: Optional[str] = None
     administrator_permission: int = 4
@@ -352,6 +358,16 @@ class Config(Serializable):
         'day_count_reforged',
         'daycount_nbt'
     ]
+
+    @property
+    def default_scheme_name(self):
+        if not self.default_scheme.endswith('.yml'):
+            return f"{self.default_scheme}.yml"
+        return self.default_scheme
+
+    @property
+    def all_schedules(self):
+        return [] if self.schedule is None else self.schedule
 
     @property
     def prefix(self):
@@ -408,7 +424,7 @@ class Config(Serializable):
         return ret
 
     def save(self, file_path: Optional[str] = None, keep_fmt=True):
-        file_path = config_path if file_path is None else file_path
+        file_path = CONFIG_PATH if file_path is None else file_path
         to_save = self.serialize()
         if os.path.isfile(file_path) and keep_fmt:
             with open(file_path, 'r', encoding='UTF-8') as f:
@@ -425,7 +441,7 @@ class Config(Serializable):
             yaml.round_trip_dump(to_save, f, allow_unicode=True)
 
     def init_schedule(self, src: Optional[CommandSource] = None, file_path: Optional[str] = None):
-        self.schedule.append(Schedule.get_default())
+        self.all_schedules.append(Schedule.get_default())
         logger.debug(str(self.serialize()))
         self.save(file_path=file_path)
         if isinstance(src, CommandSource):
@@ -440,15 +456,15 @@ class Config(Serializable):
             additional_settings = AdditionalSettings.load(self.additional_config)
         return additional_settings
 
-    def get_current_join_motd(self, player: Optional[str] = None) -> List[Schedule]:
+    def get_matched_schedules(self, player: Optional[str] = None, reverse: bool = False) -> List[Schedule]:
         ret = []
-        for motd in self.schedule:
+        for motd in self.all_schedules:
             if motd.is_matched(player):
                 ret.append(motd)
-        return sorted(ret, reverse=True)
+        return sorted(ret, reverse=reverse)
 
 
-config = Config.load(config_path)
+config = Config.load(CONFIG_PATH)
 
 
 def get_day(server: PluginServerInterface) -> str:

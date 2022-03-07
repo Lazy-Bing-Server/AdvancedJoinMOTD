@@ -9,7 +9,7 @@ advanced_join_motd:
       §7{prefix} preview §6<文件名>§r 预览选定的JoinMOTD
       §7{prefix} info §6<文件名>§r 显示选定的文件及其计划任务
     init: |
-      §7{prefix} init motd §6<文件名>§r 在插件目录中初始化一个JoinMOTD方案文件
+      §7{prefix} init scheme §6<文件名>§r 在插件目录中初始化一个JoinMOTD方案文件
       §7{prefix} init schedule §r 在配置文件中初始化一个计划任务
   hover:
     preview: '点此预览 §e{file}§r 的内容'
@@ -44,4 +44,4 @@ advanced_join_motd:
     motd_gen: 新的默认欢迎信息已生成
     sche_gen: 新的默认计划任务已生成
   exc:
-    occurred: 'Advanced Join MOTD出现错误, 请通知管理员处理, 错误如下: §c{e}§r'
+    occurred: 'AdvancedJoinMOTD出现错误, 请告知管理员处置: §c{e}§r'

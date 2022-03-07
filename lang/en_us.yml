@@ -5,19 +5,19 @@ advanced_join_motd:
       §8-----§e {plg_name} §rv{ver} §8-----§r
       §7{prefix}§r Show this help message
       §7{prefix} init§r Initialize some configuration
-      §7{prefix} preview§r Preview current JoinMOTD
-      §7{prefix} preview §6<file>§r Preview selected JoinMOTD
+      §7{prefix} preview§r Preview current scheme
+      §7{prefix} preview §6<file>§r Preview selected scheme
       §7{prefix} info §6<file>§r Show selected file & schedule info
     init: |
-      §7{prefix} init motd §6<file>§r Initialize a JoinMOTD file in plugin folder
+      §7{prefix} init scheme §6<file>§r Initialize a scheme file in data folder
       §7{prefix} init schedule §r Initialize a schedule in config file
   hover:
     preview: 'Click to view JoinMOTD file §e{file}§r content'
     suggest: 'Click to fill §7{cmd}'
   info:
     file:
-      title: 'JoinMOTD File §e{file}§r info:'
-      content: 'JoinMOTD Content: '
+      title: 'Scheme File §e{file}§r info:'
+      content: 'Scheme Content: '
       click_here: 'Click here to view content'
     sched:
       both_not_found: 'Both the file and the schedule DO NOT exist'
@@ -41,7 +41,7 @@ advanced_join_motd:
   msg:
     reload_done: Plugin reloaded
     addi_gen: A new default extra config generated
-    motd_gen: A new default JoinMOTD generated
+    motd_gen: A new default scheme generated
     sche_gen: A new default schedule generated
   exc:
-    occurred: 'Error occurred while running Advanced Join MOTD: §c{e}§r'
+    occurred: 'Error occurred while running AdvancedJoinMOTD, contact server admin to resolve it: §c{e}§r'
