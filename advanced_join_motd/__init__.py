@@ -20,11 +20,11 @@ class NoValidScheme(Exception):
 
 
 def on_player_joined(server: PluginServerInterface, player: str, info: Info):
-    display(server, player=player)
+    display(player=player)
 
 
 @new_thread('AdvJoinMOTD_Main')
-def display(server: PluginServerInterface, player: str = None, file_name: Optional[str] = None):
+def display(player: str = None, file_name: Optional[str] = None):
     try:
         schedule_list = config.get_matched_schedules(player)
         # reverse = False, pop the scheme from the tail
@@ -50,7 +50,7 @@ def display(server: PluginServerInterface, player: str = None, file_name: Option
                 if max_recursion >= 0 and not is_default:
                     return get_current_scheme_data(max_recursion - 1)
                 else:
-                    raise exc
+                    raise exc   # Make pycharm happy XD
 
         raw_text, file_name = get_current_scheme_data() if file_name is None else get_defined_scheme_data(file_name)
 
@@ -58,11 +58,11 @@ def display(server: PluginServerInterface, player: str = None, file_name: Option
         if player is None:
             logger.info('\n' + raw_text)
         else:
-            server.tell(player, raw_text)
+            gl_server.tell(player, raw_text)
             logger.debug(f'JoinMOTD for {player} is: \n{raw_text}')
     except Exception as e:
         if player is not None:
-            server.tell(player, tr('exc.occurred', e=str(e)))
+            gl_server.tell(player, tr('exc.occurred', e=str(e)))
         logger.exception('Error occurred while running AdvancedJoinMOTD:')
 
 
@@ -163,13 +163,13 @@ def init_help(src: CommandSource):
     src.reply(tr('help.init', prefix=list(config.prefix)[0]).set_translator(htr))
 
 
-def register_command(server: PluginServerInterface):
+def register_command():
     def __display(src: CommandSource, file_name: Optional[str] = None):
-        args = [src]
+        kwargs = {'file_name': file_name}
         if isinstance(src, PlayerCommandSource):
-            args.append(src.player)
+            kwargs['player'] = src.player
         with RTextMCDRTranslation.language_context(src.get_preference().language):
-            display(*args, file_name=file_name)
+            display(**kwargs)
 
     root = Literal(config.prefix).runs(
             lambda src: show_help(src)
@@ -225,7 +225,7 @@ def on_load(server: PluginServerInterface, prev_module):
     else:
         raise TypeError('Prefix type is not str or list')
 
-    register_command(server)
+    register_command()
 
     if not os.path.isdir(SCHEME_FOLDER):
         os.makedirs(SCHEME_FOLDER)

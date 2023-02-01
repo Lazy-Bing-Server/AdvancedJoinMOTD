@@ -1,10 +1,11 @@
 import logging
 import os
+import re
 import time
 
 from mcdreforged.api.all import ServerInterface, RTextMCDRTranslation, MCDReforgedLogger
 from datetime import datetime
-from typing import Union, Tuple
+from typing import Tuple
 
 
 VERBOSE = True
@@ -18,6 +19,11 @@ LOG_PATH = os.path.join(DATA_FOLDER, 'ajm.log')
 RANDOM_TEXT_PATH = os.path.join(DATA_FOLDER, 'random_text.yml')
 
 
+class NoColorFormatter(logging.Formatter):
+    def formatMessage(self, record):
+        return clean_console_color_code(super().formatMessage(record))
+
+
 class DebugLogger(MCDReforgedLogger):
     DEFAULT_NAME = 'AdvJoinMOTD'
 
@@ -29,47 +35,18 @@ class DebugLogger(MCDReforgedLogger):
         if self.file_handler is not None:
             self.removeHandler(self.file_handler)
         self.file_handler = logging.FileHandler(file_name, encoding='UTF-8')
-        self.file_handler.setFormatter(self.FILE_FMT)
+        self.file_handler.setFormatter(
+            NoColorFormatter(
+                f'[%(name)s] [%(asctime)s] [%(threadName)s/%(levelname)s]: %(message)s',
+                datefmt='%Y-%m-%d %H:%M:%S'
+            )
+        )
         self.addHandler(self.file_handler)
         return self
 
 
 logger = DebugLogger()
-
-
-# TODO: Add it to the next version
-class AdvancedInteger:
-    def __init__(self, value: int):
-        self.value = value
-
-    @property
-    def digits_list(self):
-        return [int(num) for num in list(str(self.value))]
-
-    def __len__(self):
-        return len(self.digits_list)
-
-    def __getitem__(self, item: Union[str, int, float]):
-        ind = int(item)
-        return 0 if (ind >= 0 and ind + 1 > len(self)) or (ind < 0 and abs(ind) > len(self)) else self.digits_list[ind]
-
-    @property
-    def ordinal(self) -> str:
-        if self[-2] == 1:
-            return f'{self.value}th'
-        elif self[-1] not in (1, 2, 3):
-            return f'{self.value}th'
-        elif self[-1] == 1:
-            return f'{self.value}st'
-        elif self[-1] == 2:
-            return f'{self.value}nd'
-        elif self[-1] == 3:
-            return f'{self.value}rd'
-        else:
-            return ''
-
-    def __str__(self):
-        return str(self.value)
+logger.set_file(LOG_PATH)
 
 
 def now_dict():
@@ -115,4 +92,8 @@ def get_self_version() -> Tuple[str, int]:
         version_str += '-' + str(version.pre)
     build = 0 if version.build is None else version.build.num
     return version_str, build
+
+
+def clean_console_color_code(text):
+    return re.sub(r'\033\[(\d+(;\d+)?)?m', '', text)
 

@@ -1,6 +1,6 @@
 {
     "id": "advanced_join_motd",
-    "version": "0.7.1-alpha.1+build.13",
+    "version": "0.8.0-alpha.1+build.14",
     "name": "Advanced Join MOTD",
     "description": {
         "en_us": "Custom your own join MOTD.",
@@ -17,6 +17,6 @@
     },
     "archive_name": "AdvancedJoinMOTD-v{version}.pyz",
     "resources": [
-        "lang", "requirements.txt", "LICENSE", "__main__.py"
+        "lang", "LICENSE", "__main__.py"
     ]
 }

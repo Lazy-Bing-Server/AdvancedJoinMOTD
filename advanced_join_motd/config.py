@@ -16,6 +16,8 @@ from copy import copy
 
 from advanced_join_motd.random_pools import random_text_manager
 from .utils import get_default_motd_file_name, CONFIG_PATH, SCHEME_FOLDER, tr, gl_server, logger, get_self_version
+from .advanced_basic_types import AdvancedInteger, AdvancedList
+
 
 additional_settings: Optional['AdditionalSettings'] = None
 
@@ -29,11 +31,11 @@ class SpecialParameter:
         if gl_server is not None:
             api = gl_server.get_plugin_instance('minecraft_data_api')
             self.data = dict(
-                day=str(get_day(gl_server)),
+                day=get_day(gl_server),
                 mcdr_version=str(gl_server.get_plugin_metadata('mcdreforged').version),
                 minecraft_version=str(gl_server.get_server_information().version),
-                player_list='' if api is None else ', '.join(api.get_server_player_list()[2]),
-                this_plugin_version=str(get_self_version()[0])
+                player_list='' if api is None else AdvancedList(api.get_server_player_list()[2]),
+                this_plugin_version=get_self_version()[0]
             )
         else:
             self.data = dict()
@@ -266,7 +268,7 @@ Today is the §e{day}§r day of §e{main_server_name}§r
             elif isinstance(value, list):
                 texts[key] = self.process_rtextlist(value)
             else:
-                texts[key] = str(value)
+                texts[key] = value
         return texts
 
     @property
@@ -313,6 +315,9 @@ Today is the §e{day}§r day of §e{main_server_name}§r
         var = self.variables_texts.copy()
         var.update(special_paras.data)
         var.update(dict(server_list=self.server_list_text))
+        for key, value in var.copy().items():
+            if isinstance(value, int):
+                var[key] = AdvancedInteger(value)
         logger.debug(var)
         if self.formatter.strip().startswith(f'{gl_server.get_self_metadata().id}.'):
             return tr(self.formatter.strip(), **var)
