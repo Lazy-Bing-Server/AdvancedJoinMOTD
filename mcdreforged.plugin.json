@@ -1,6 +1,6 @@
 {
     "id": "advanced_join_motd",
-    "version": "0.8.0-alpha.1+build.14",
+    "version": "0.9.0-dev",
     "name": "Advanced Join MOTD",
     "description": {
         "en_us": "Custom your own join MOTD.",
@@ -13,10 +13,10 @@
     "link": "https://github.com/Lazy-Bing-Server/AdvancedJoinMOTD",
     "dependencies":
     {
-        "mcdreforged": ">=2.3.1-beta.1"
+        "mcdreforged": ">=2.12.0"
     },
-    "archive_name": "AdvancedJoinMOTD-v{version}.pyz",
+
     "resources": [
-        "lang", "LICENSE", "__main__.py"
+        "lang", "LICENSE"
     ]
 }

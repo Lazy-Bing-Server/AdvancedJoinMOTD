@@ -1,47 +1,44 @@
 advanced_join_motd:
   help:
-    mcdr: 显示欢迎信息
+    mcdr: 所有目光，向我看齐！看我看我！
     detailed: |
-      §8-----§e {plg_name} §rv{ver} §8-----§r
-      §7{prefix}§r 显示此帮助信息
-      §7{prefix} init§r 初始化某些设定
-      §7{prefix} preview§r 预览当前的JoinMOTD
-      §7{prefix} preview §6<文件名>§r 预览选定的JoinMOTD
-      §7{prefix} info §6<文件名>§r 显示选定的文件及其计划任务
-    init: |
-      §7{prefix} init scheme §6<文件名>§r 在插件目录中初始化一个JoinMOTD方案文件
-      §7{prefix} init schedule §r 在配置文件中初始化一个计划任务
-  hover:
-    preview: '点此预览 §e{file}§r 的内容'
-    suggest: '点此填入 §7{cmd}'
+      §7-----§r MCDR {name} v{ver} §7-----§r
+      这大概是你用过坠吼用的插件模板
+      §7{prefix}§r 预览当前入服文本
+      §7{prefix} help§r 显示帮助信息
+      §7{prefix} reload§r 重载此插件
+      §7{prefix} list§r 列出已加载的方案
+      §7{prefix} info§e <方案>§r 显示方案详情
+      §7{prefix} preview§e <方案>§r 预览指定方案
+
+  loading:
+    reloaded: 插件已重载
+    reloading_failed: "重载插件 {id} 时出错，请联系管理员: "
+
+  # locale "en_us" doesn't require these keys
+  config:
+    "Fail to read config file, using default config": 读取配置文件失败，使用默认配置
+    "Validation during config file saving failed, saved without original format": 保存配置文件时验证错误，将不保留任何格式保存
+    "There may be mistakes in original config file format, please contact plugin maintainer": 原始配置文件格式可能存在问题，请联系插件维护者
+    "Attempting saving config with original file format due to validation failure while attempting saving config and keep local config file format": 因尝试保留当前配置文件格式进行保存失败，将尝试使用原始格式进行保存
+    "Fixed invalid config keys with default values, please confirm these values: ": "已修复以下无效的配置键，请尽快确认这些键值: "
+
+  list:
+    title: "当前注册了 §e{}§r 个方案:"
+    hover: "点击获取 §7{}§r 的详情"
+
   info:
-    file:
-      title: 'JoinMOTD文件 §e{file}§r 详情如下:'
-      content: 'JoinMOTD 内容: '
-      click_here: '点此查看内容'
-    sched:
-      both_not_found: '文件和计划任务中均未找到该文件'
-      found: '找到了 {num} 个包含该文件的计划任务:'
-      not_found: '未找到该文件, 但找到了 {num} 个包含该文件的计划任务:'
-      year: '匹配年份: '
-      mon: '匹配月份: '
-      mday: '匹配一个月里的天数: '
-      hour: '匹配小时: '
-      min: '匹配分钟: '
-      secs: '匹配秒: '
-      wday: '匹配一周中的天数: '
-      yday: '匹配一年里的天数: '
-      from_time: '限定最小时间戳: '
-      to_time: '限定最大时间戳: '
-      player_blacklist: '玩家黑名单: '
-      player_whitelist: '玩家白名单: '
-      priority: '优先级: '
-  click:
-    jump_server: 点击加入 §7{server}§r
-  msg:
-    reload_done: 已重载本插件
-    addi_gen: 新的默认额外配置已生成
-    motd_gen: 新的默认欢迎信息已生成
-    sche_gen: 新的默认计划任务已生成
-  exc:
-    occurred: 'AdvancedJoinMOTD出现错误, 请告知管理员处置: §c{e}§r'
+    text: |
+      方案名称: §b{scheme_name}§r
+      来源插件: §6{plugin_id}§7@§e{plugin_ver}§r
+      优先级: §9{priority}§r
+      有效: §{avail}§r
+      {click_to_preview}
+    click_to_preview:
+      text: '[§7点此预览§r]'
+      hover: 点此预览 §7{}§r
+
+  preview:
+    not_found: "方案 {} 不存在"
+    generated_failed: "展示方案 {scheme_name} 文本失败: "
+    no_avail: "§c{plugin_name} 出错，找不到有效的方案"

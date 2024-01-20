@@ -1,0 +1,14 @@
+# Command Prefix for plugin commands
+# 插件指令的前缀
+command_prefix:
+
+
+# Permission requirements for commands when enable_permission_check is true
+# 各指令的权限需求（权限检查开关 enable_permission_check 为 true 时有效）
+permission_requirements:
+enable_permission_check:
+
+
+# Options below were missing and set by MCDR with the default value
+# Remember to check and update them as soon as possible
+# 以下选项为 MCDR 补全的缺失项，请注意尽快检查并更新这些配置项

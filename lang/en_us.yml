@@ -1,47 +1,40 @@
 advanced_join_motd:
   help:
-    mcdr: Display welcome text
+    mcdr: Hello world from my plugin!
     detailed: |
-      §8-----§e {plg_name} §rv{ver} §8-----§r
+      §7-----§r MCDR {name} v{ver} §7-----§r
+      This should be the best template you've ever used
       §7{prefix}§r Show this help message
-      §7{prefix} init§r Initialize some configuration
-      §7{prefix} preview§r Preview current scheme
-      §7{prefix} preview §6<file>§r Preview selected scheme
-      §7{prefix} info §6<file>§r Show selected file & schedule info
-    init: |
-      §7{prefix} init scheme §6<file>§r Initialize a scheme file in data folder
-      §7{prefix} init schedule §r Initialize a schedule in config file
-  hover:
-    preview: 'Click to view JoinMOTD file §e{file}§r content'
-    suggest: 'Click to fill §7{cmd}'
+      §7{prefix} reload§r Reload this plugin
+
+  loading:
+    reloaded: Plugin reloaded
+    reloading_failed: "Error occurred while reloading plugin {id}: "
+
+#  These keys should be contained in other language, locale "en_us" doesn't require these keys
+#  config:
+#    "Fail to read config file, using default config":
+#    "Validation during config file saving failed, saved without original format":
+#    "There may be mistakes in original config file format, please contact plugin maintainer":
+#    "Attempting saving config with original file format due to validation failure while attempting saving config and keep local config file format":
+#    "Fixed invalid config keys with default values, please confirm these values: ":
+
+  list:
+    title: "Registered §e{}§r schemes currently:"
+    hover: "Click to get detailed info of §7{}§r"
+
   info:
-    file:
-      title: 'Scheme File §e{file}§r info:'
-      content: 'Scheme Content: '
-      click_here: 'Click here to view content'
-    sched:
-      both_not_found: 'Both the file and the schedule DO NOT exist'
-      found: 'Found {num} schedule(s) including this file:'
-      not_found: 'Found no file but {num} schedule(s) including this file:'
-      year: 'Match year: '
-      mon: 'Match month: '
-      mday: 'Match day in a month: '
-      hour: 'Match hour: '
-      min: 'Match minute: '
-      secs: 'Match seconds: '
-      wday: 'Match day in a week: '
-      yday: 'Match day in a year: '
-      from_time: 'Match minimum timestamp: '
-      to_time: 'Match maximum timestamp: '
-      player_blacklist: 'Player blacklist: '
-      player_whitelist: 'Player whitelist: '
-      priority: 'Priority: '
-  click:
-    jump_server: Click to enter §7{server}§r
-  msg:
-    reload_done: Plugin reloaded
-    addi_gen: A new default extra config generated
-    motd_gen: A new default scheme generated
-    sche_gen: A new default schedule generated
-  exc:
-    occurred: 'Error occurred while running AdvancedJoinMOTD, contact server admin to resolve it: §c{e}§r'
+    text: |
+      Schema name: §b{scheme_name}§r
+      Source plugin: §6{plugin_id}§7@§e{plugin_ver}§r
+      Priority: §9{priority}§r
+      Status: §{avail}§r
+      {click_to_preview}
+    click_to_preview:
+      text: '[§7Click to preview§r]'
+      hover: Click to preview §7{}§r
+
+  preview:
+    not_found: "Scheme {} not found"
+    generated_failed: "Display scheme text {scheme_name} failed: "
+    no_avail: "§c{plugin_name} ran into a problem, no available scheme"
