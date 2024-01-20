@@ -27,7 +27,7 @@ class CommandManager:
         meta = self.server.get_self_metadata()
         source.reply(
             htr(
-                'help.detailed',
+                'help.detailed.text',
                 _lb_htr_prefixes=self.config.prefix,
                 prefix=self.config.primary_prefix,
                 name=meta.name,

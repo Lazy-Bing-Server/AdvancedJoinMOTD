@@ -1,15 +1,17 @@
 advanced_join_motd:
   help:
     mcdr: 高级入服文本显示和管理
-    detailed: |
-      §7-----§r MCDR §e{name}§r v{ver} §7-----§r
-      高级入服文本显示和管理
-      §7{prefix}§r 预览当前入服文本
-      §7{prefix} help§r 显示帮助信息
-      §7{prefix} reload§r 重载此插件
-      §7{prefix} list§r 列出已加载的方案
-      §7{prefix} info§e <方案>§r 显示方案详情
-      §7{prefix} preview§e <方案>§r 预览指定方案
+    detailed:
+      text: |
+        §7-----§r MCDR §e{name}§r v{ver} §7-----§r
+        高级入服文本显示和管理
+        §7{prefix}§r 预览当前入服文本
+        §7{prefix} help§r 显示帮助信息
+        §7{prefix} reload§r 重载此插件
+        §7{prefix} list§r 列出已加载的方案
+        §7{prefix} info§e <方案>§r 显示方案详情
+        §7{prefix} preview§e <方案>§r 预览指定方案
+      hover: 点击填入指令 §7{}
 
   loading:
     reloaded: 插件已重载

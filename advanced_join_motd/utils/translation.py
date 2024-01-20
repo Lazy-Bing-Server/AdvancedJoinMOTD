@@ -29,7 +29,7 @@ def htr(translation_key: str, *args, _lb_htr_prefixes: Optional[List[str]] = Non
             if result is not None:
                 command = result.group() + ' '
                 processed.append(RText(line).c(RAction.suggest_command, command).h(
-                    rtr(f'hover.suggest', command)))
+                    rtr(f'help.detailed.hover', command)))
             else:
                 processed.append(line)
         return RTextBase.join('\n', processed)
