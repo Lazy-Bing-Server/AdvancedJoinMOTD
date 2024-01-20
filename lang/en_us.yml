@@ -3,9 +3,13 @@ advanced_join_motd:
     mcdr: Hello world from my plugin!
     detailed: |
       §7-----§r MCDR {name} v{ver} §7-----§r
-      This should be the best template you've ever used
-      §7{prefix}§r Show this help message
+      Advanced player join text display & management
+      §7{prefix}§r Preview current join text
+      §7{prefix} help§r Display help message
       §7{prefix} reload§r Reload this plugin
+      §7{prefix} list§r Display loaded schemes
+      §7{prefix} info§e <scheme>§r Display scheme detail
+      §7{prefix} preview§e <scheme>§r Preview specified scheme
 
   loading:
     reloaded: Plugin reloaded

@@ -1,9 +1,9 @@
 advanced_join_motd:
   help:
-    mcdr: 所有目光，向我看齐！看我看我！
+    mcdr: 高级入服文本显示和管理
     detailed: |
-      §7-----§r MCDR {name} v{ver} §7-----§r
-      这大概是你用过坠吼用的插件模板
+      §7-----§r MCDR §e{name}§r v{ver} §7-----§r
+      高级入服文本显示和管理
       §7{prefix}§r 预览当前入服文本
       §7{prefix} help§r 显示帮助信息
       §7{prefix} reload§r 重载此插件
