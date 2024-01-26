@@ -4,9 +4,9 @@
 
 Custom your own join MOTD! Highly free!
 
-Help message will be written in `config/advanced_join_motd/ReadMe.txt` in MCDR working directory after loading it in MCDR `plugins` directory. (So I can lazy xD)
+This plugin has no documents now xD, because it will definitely spend me a lot of time, especially for this highly free plugin
 
-Because I'm lazy so this plugin is not available in English yet, if you need this in English pls just send issue in this repo.
+And there may be more change in the future, so it's hard to keep document and api stable
 
 ## 中文
 
@@ -14,5 +14,5 @@ Because I'm lazy so this plugin is not available in English yet, if you need thi
 
 高度可自定义的加入欢迎信息
 
-帮助信息都写在MCDR根目录下`config/advanced_join_motd/ReadMe.txt`里了, 本插件扔到`plugins`目录下面重载一次MCDR插件就能看到帮助了, 这样我就可以lazy了
+文档暂时没写，因为未来功能变动可能比较大所以并未写，而且这么高自定义度了那文档肯定也是又臭又长（
 

@@ -1,0 +1,22 @@
+{
+    "id": "advanced_join_motd",
+    "version": "0.9.0-dev",
+    "name": "Advanced Join MOTD",
+    "description": {
+        "en_us": "Custom your own join MOTD.",
+        "zh_cn": "自定义入服欢迎文本"
+    },
+    "author": 
+        [
+            "Ra1ny_Yuki"
+        ],
+    "link": "https://github.com/Lazy-Bing-Server/AdvancedJoinMOTD",
+    "dependencies":
+    {
+        "mcdreforged": ">=2.12.0"
+    },
+
+    "resources": [
+        "lang", "LICENSE"
+    ]
+}

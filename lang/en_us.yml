@@ -1,0 +1,47 @@
+advanced_join_motd:
+  help:
+    mcdr: Hello world from my plugin!
+    detailed:
+      text: |
+        §7-----§r MCDR {name} v{ver} §7-----§r
+        Advanced player join text display & management
+        §7{prefix}§r Preview current join text
+        §7{prefix} help§r Display help message
+        §7{prefix} reload§r Reload this plugin
+        §7{prefix} list§r Display loaded schemes
+        §7{prefix} info§e <scheme>§r Display scheme detail
+        §7{prefix} preview§e <scheme>§r Preview specified scheme
+      hover: Click to suggest command §7{}
+
+
+  loading:
+    reloaded: Plugin reloaded
+    reloading_failed: "Error occurred while reloading plugin {id}: "
+
+#  These keys should be contained in other language, locale "en_us" doesn't require these keys
+#  config:
+#    "Fail to read config file, using default config":
+#    "Validation during config file saving failed, saved without original format":
+#    "There may be mistakes in original config file format, please contact plugin maintainer":
+#    "Attempting saving config with original file format due to validation failure while attempting saving config and keep local config file format":
+#    "Fixed invalid config keys with default values, please confirm these values: ":
+
+  list:
+    title: "Registered §e{}§r schemes currently:"
+    hover: "Click to get detailed info of §7{}§r"
+
+  info:
+    text: |
+      Schema name: §b{scheme_name}§r
+      Source plugin: §6{plugin_id}§7@§e{plugin_ver}§r
+      Priority: §9{priority}§r
+      Status: §{avail}§r
+      {click_to_preview}
+    click_to_preview:
+      text: '[§7Click to preview§r]'
+      hover: Click to preview §7{}§r
+
+  preview:
+    not_found: "Scheme {} not found"
+    generated_failed: "Display scheme text {scheme_name} failed: "
+    no_avail: "§c{plugin_name} ran into a problem, no available scheme"
